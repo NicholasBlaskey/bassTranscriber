@@ -5,7 +5,7 @@ DATA_STORED_IN = "melSpecs/"
 TRAIN_LOCATION = "data/train/"
 VALIDATION_LOCATION = "data/validation/"
 VALIDATION_PERCENT = .20
-NUMBER_CLASSES = 2
+NUMBER_CLASSES = 15
 
 def main():
     os.mkdir(TRAIN_LOCATION)
