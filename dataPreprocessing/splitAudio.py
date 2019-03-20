@@ -10,7 +10,6 @@ from os import listdir
 from pydub import AudioSegment
 
 SONG_TEMPO = 240                # In bpm
-LENGTH_OF_PLAYING = 5           # In seconds
 PATH_TO_IMPORT = "rawAudio/"    # Where the raw audio is   
 PATH_TO_EXPORT = "splitAudio/"  # Where to save the audio
 
@@ -28,7 +27,6 @@ def split_one_file(file_name):
     audio = AudioSegment.from_mp3(PATH_TO_IMPORT + file_name + ".wav")
 
     note_length = (int) (60 / SONG_TEMPO * 1000)
-    # split sound in 5-second slices and export
     for i, chunk in enumerate(audio[::note_length]):
       with open(PATH_TO_EXPORT + file_name + "#%i.wav" % i, "wb") as f:
         chunk.export(f, format="wav")
