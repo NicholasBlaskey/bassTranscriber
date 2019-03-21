@@ -1,3 +1,11 @@
+"""
+This file is used to move the mel spectrogram data
+in a fashion that is easy to work with in a keras
+image generator. The data is split into train and
+validation folders with the train and validation folder
+having subfolders for each class to put the data in.
+"""
+
 import os, shutil
 import random
 
@@ -8,6 +16,17 @@ VALIDATION_PERCENT = .20
 NUMBER_CLASSES = 15
 
 def main():
+    """
+    This function copies over the data to a new format and
+    splits it into train and validation sets.
+
+    Parameters:
+    none
+
+    Returns:
+    none
+    """
+    
     os.mkdir(TRAIN_LOCATION)
     os.mkdir(VALIDATION_LOCATION)
 
