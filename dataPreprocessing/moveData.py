@@ -13,7 +13,7 @@ DATA_STORED_IN = "melSpecs/"
 TRAIN_LOCATION = "data/train/"
 VALIDATION_LOCATION = "data/validation/"
 VALIDATION_PERCENT = .20
-NUMBER_CLASSES = 15
+NUMBER_CLASSES = 37
 
 def main():
     """

@@ -34,6 +34,7 @@ def make_generators():
     train_datagen = ImageDataGenerator(rescale=1./255)
     test_datagen = ImageDataGenerator(rescale=1./255)
 
+    
     train_generator = train_datagen.flow_from_directory(
             TRAIN_DATA_PATH,
             target_size= (150, 150),
@@ -71,7 +72,7 @@ def make_model():
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Flatten())
     model.add(layers.Dense(512, activation='relu'))
-    model.add(layers.Dense(15, activation='softmax'))
+    model.add(layers.Dense(37, activation='softmax'))
     
     #model.add(layers.Dense(1, activation='sigmoid'))
     
@@ -136,10 +137,10 @@ def main():
     
     history = model.fit_generator(
       train_generator,
-      steps_per_epoch=300,
-      epochs=30,
+      steps_per_epoch=350,
+      epochs=15,
       validation_data=validation_generator,
-      validation_steps=50)
+      validation_steps=70)
 
     model.save('multiModel.h5')
     
@@ -156,7 +157,7 @@ def load_our_model():
     none
     """
     
-    model = load_model('POCModel.h5')
+    model = load_model('multiModel.h5')
     train_generator, validation_generator = make_generators()
     
     history = model.fit_generator(
