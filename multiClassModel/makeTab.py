@@ -11,9 +11,13 @@ import pylab
 import librosa
 import librosa.display
 import numpy as np
+from keras import models
+from keras.preprocessing.image import ImageDataGenerator
+from keras.models import load_model
+
 
 SONG_TEMPO = 240
-SONG_NAME = "0"
+SONG_NAME = "turnASquare"
 PATH_TO_SONG = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songs/" + SONG_NAME + ".wav"
 PATH_TO_STORE_DATA = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songDataStorage/"
 
@@ -51,10 +55,11 @@ def makeNotesIntoMelSpecs():
     """
     
     os.mkdir(PATH_TO_STORE_DATA + SONG_NAME + "/melSpecs/")
+    os.mkdir(PATH_TO_STORE_DATA + SONG_NAME + "/melSpecs/images/")
     for file_name in os.listdir(PATH_TO_STORE_DATA + SONG_NAME + "/splits/"):
         # Load the song
         sig, fs = librosa.load(PATH_TO_STORE_DATA + SONG_NAME + "/splits/" + file_name)   
-        save_path = PATH_TO_STORE_DATA + SONG_NAME + "/melSpecs/" + file_name.split(".")[0] + ".png"   
+        save_path = PATH_TO_STORE_DATA + SONG_NAME + "/melSpecs/images/" + file_name.split(".")[0] + ".png"   
 
         # Format and make and save the mel spectogram
         pylab.axis('off') # no axis
@@ -76,11 +81,46 @@ def predictMelSpecs():
     predictions: an list of all note predictions sequentially
     starting at 0 as the first note
     """
+
+    dir_to_data = PATH_TO_STORE_DATA + SONG_NAME + "/melSpecs"
+    model = load_model('multiModel.h5')
+
+    song_datagen = ImageDataGenerator(rescale = 1./255)
+
+    song_generator = song_datagen.flow_from_directory(
+            directory = dir_to_data,
+            target_size= (150, 150),
+            batch_size= 1,
+            shuffle = False,
+            class_mode= None)
+
+    file_names = song_generator.filenames
+    file_names_indexes = []
+
+    song_generator.reset()
+    prediction_array = model.predict_generator(song_generator, verbose=1, steps = len(dir_to_data + "/images/"))
+
     predictions = []
+    for file_name in file_names:
+        # Remove file extension and the directory info and cast to int
+        file_names_indexes.append(int(file_name.split(".")[0].split("\\")[1]))
+
+    predictions = [0] * len(file_names_indexes)
+    for file_index in file_names_indexes:
+        predictions[file_index] = np.argmax(prediction_array[file_index])
+        print(file_index)
+        
+    #for prediction in prediction_array:
+    #    predictions.append(np.argmax(prediction))
+    
+    print(predictions)
     return predictions
              
 def outputTab(predictions):
-    pass
+    line_1 = "G|"
+    line_2 = "D|"
+    line_3 = "A|"
+    line_4 = "E|"
 
 def main():
     os.mkdir(PATH_TO_STORE_DATA + SONG_NAME + "/")
@@ -90,8 +130,8 @@ def main():
     outputTab(predictions)
 
 if __name__ == "__main__":
-    main()
-
+    #main()
+    predictMelSpecs()
 
 
 
