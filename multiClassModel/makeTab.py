@@ -16,10 +16,12 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import load_model
 
 
-SONG_TEMPO = 240
-SONG_NAME = "turnASquare"
+SONG_TEMPO = 320
+SONG_NAME = "bombtrack"
 PATH_TO_SONG = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songs/" + SONG_NAME + ".wav"
 PATH_TO_STORE_DATA = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songDataStorage/"
+TRAIN_DATA_PATH = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/dataPreprocessing/data/train"
+
 
 def splitNoteByNote():
     """
@@ -85,6 +87,14 @@ def predictMelSpecs():
     dir_to_data = PATH_TO_STORE_DATA + SONG_NAME + "/melSpecs"
     model = load_model('multiModel.h5')
 
+    train_datagen = ImageDataGenerator(rescale=1./255)
+    
+    train_generator = train_datagen.flow_from_directory(
+            TRAIN_DATA_PATH,
+            target_size= (150, 150),
+            batch_size= 20,
+            class_mode= 'sparse')
+    
     song_datagen = ImageDataGenerator(rescale = 1./255)
 
     song_generator = song_datagen.flow_from_directory(
@@ -105,23 +115,88 @@ def predictMelSpecs():
         # Remove file extension and the directory info and cast to int
         file_names_indexes.append(int(file_name.split(".")[0].split("\\")[1]))
 
+    # Reverse the dictonary for class indexes 
+    class_indexes_to_notes = {v: k for k, v in train_generator.class_indices.items()}
     predictions = [0] * len(file_names_indexes)
     for file_index in file_names_indexes:
-        predictions[file_index] = np.argmax(prediction_array[file_index])
-        print(file_index)
+        # First take the highest value of the prediction probalities and get its index
+        # Then convert that index to the note name through dictonary and finally convert to int
+        predictions[file_index] = int(class_indexes_to_notes[np.argmax(prediction_array[file_index])])
         
-    #for prediction in prediction_array:
-    #    predictions.append(np.argmax(prediction))
-    
-    print(predictions)
     return predictions
-             
-def outputTab(predictions):
-    line_1 = "G|"
-    line_2 = "D|"
-    line_3 = "A|"
-    line_4 = "E|"
 
+CHARS_PER_LINE = 60
+def outputTab(predictions):
+    # Make a dictonary to convert from class name to tab
+    fname_to_note = {}
+    for i in range(5):
+        fname_to_note[i] = "E" + str(i)
+        fname_to_note[5 + i] = "A" + str(i)
+        fname_to_note[10 + i] = "D" + str(i)
+
+    # Add in the G string
+    for i in range(21):
+        fname_to_note[15 + i] = "G" + str(i)
+
+    # Add in silence
+    fname_to_note[36] = "-"
+    
+
+#    line1 = "G|-"
+#    line2 = "D|-"
+#    line3 = "A|-"
+#    line4 = "E|-"
+    line1 = line2 = line3 = line4 = ""
+    output = ""
+    for i, prediction in enumerate(predictions):
+        note = fname_to_note[prediction]
+        # Handle running out of characters and starting a new line
+        if i % int(CHARS_PER_LINE / 3) == 0:
+            if i != 0:
+                output = output + line1 + "\n" + line2 + "\n" + line3 + "\n" + line4 + "\n\n"
+            line1 = "G|-"
+            line2 = "D|-"
+            line3 = "A|-"
+            line4 = "E|-"
+
+        # Check for the case in which the fret # is double digit and add
+        # one extra line to all the notes without it so spacing is the same
+        if len(note) > 2:
+            if note[0] != "G":
+                line1 += "-"
+            if note[0] != "D":
+                line1 += "-"
+            if note[0] != "A":
+                line1 += "-"
+            if note[0] != "E":
+                line1 += "-"
+        
+        
+        # Add the correct note to the right place in the tab
+        if note[0] == "G":
+            line1 += "-" + note[1:] + "-"
+        else:
+            line1 += "---"
+            
+        if note[0] == "D":
+            line2 += "-" + note[1:] + "-"
+        else:
+            line2 += "---"
+            
+        if note[0] == "A":
+            line3 += "-" + note[1:] + "-"
+        else:
+            line3 += "---"
+            
+        if note[0] == "E":
+            line4 += "-" + note[1:] + "-"
+        else:
+            line4 += "---"
+        
+    # Add remaining notes to the output
+    output = output + line1 + "\n" + line2 + "\n" + line3 + "\n" + line4 + "\n"
+    print(output)
+    
 def main():
     os.mkdir(PATH_TO_STORE_DATA + SONG_NAME + "/")
     splitNoteByNote()
@@ -131,9 +206,9 @@ def main():
 
 if __name__ == "__main__":
     #main()
-    predictMelSpecs()
-
-
+    #predictMelSpecs()
+    #outputTab([1, 3, 5, 15, 16, 12, 11, 16, 19, 21, 1, 12, 11, 16, 19, 21, 1, 3, 5, 15, 16, 12, 11, 16, 19, 21])
+    main()
 
 
     
