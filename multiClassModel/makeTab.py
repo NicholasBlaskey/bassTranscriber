@@ -15,10 +15,10 @@ from keras import models
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import load_model
 from midiutil import MIDIFile
+import csv
 
-
-SONG_TEMPO = 240
-SONG_NAME = "turnASquare"
+SONG_TEMPO = 480
+SONG_NAME = "turnASquare2"
 PATH_TO_SONG = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songs/" + SONG_NAME + ".wav"
 PATH_TO_STORE_DATA = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songDataStorage/"
 TRAIN_DATA_PATH = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/dataPreprocessing/data/train"
@@ -109,7 +109,7 @@ def predictMelSpecs():
     file_names_indexes = []
 
     song_generator.reset()
-    prediction_array = model.predict_generator(song_generator, verbose=1, steps = len(dir_to_data + "/images/"))
+    prediction_array = model.predict_generator(song_generator, verbose=1, steps = len(os.listdir(dir_to_data + "/images/")))
 
     # Make a dictonary to convert from class name to tab
     fname_to_note = {}
@@ -138,7 +138,8 @@ def predictMelSpecs():
         # First take the highest value of the prediction probalities and get its index
         # Then convert that index to the note name through dictonary and finally convert to int
         predictions[file_index] = fname_to_note[int(class_indexes_to_notes[np.argmax(prediction_array[file_index])])]
-        
+
+    print(predictions)
     return predictions
 
 CHARS_PER_LINE = 60
@@ -168,6 +169,7 @@ def outputTab(predictions):
 
         # Check for the case in which the fret # is double digit and add
         # one extra line to all the notes without it so spacing is the same
+
         if len(note) > 2:
             if note[0] != "G":
                 line1 += "-"
@@ -177,7 +179,6 @@ def outputTab(predictions):
                 line1 += "-"
             if note[0] != "E":
                 line1 += "-"
-        
         
         # Add the correct note to the right place in the tab
         if note[0] == "G":
@@ -205,6 +206,17 @@ def outputTab(predictions):
     print(output)
 
 def createMIDI(predictions):
+    """
+    This function will create a midi file of the
+    notes predicted by the model.
+
+    Parameters:
+    predictions: A list containing all the predictions in order
+
+    Returns:
+    none
+    """
+    
     song_MIDI = MIDIFile(1) # Make the midi file with one track
 
     # Track 0, time 0, tempo is the song tempo
@@ -231,21 +243,47 @@ def createMIDI(predictions):
     # Write the midi data to a file with the same name as our song    
     with open(PATH_TO_STORE_DATA + SONG_NAME + "/" + SONG_NAME + ".mid", "wb") as output_file:
         song_MIDI.writeFile(output_file)
+
+def saveAsCSV(predictions):
+    """
+    This function will save the prediction array as
+    one row of a csv file to be used in later
+
+    Parameters:
+    predictions: A list of note predictions
+
+    Returns:
+    none
+    """
     
+    myFile = open(PATH_TO_STORE_DATA + SONG_NAME + "/" + SONG_NAME + '.csv', 'w', newline = "")
+    with myFile:
+        writer = csv.writer(myFile)
+        writer.writerow(predictions)
+
 def main():
+    """
+    This function will preproccess the data, make the tab,
+    make a midi file of the tab, and save the predictions as a
+    CSV file.
+
+    Parameters:
+    none
+
+    Returns:
+    none
+    """
+
     os.mkdir(PATH_TO_STORE_DATA + SONG_NAME + "/")
     splitNoteByNote()
     makeNotesIntoMelSpecs()
     predictions = predictMelSpecs()
     outputTab(predictions)
     createMIDI(predictions)
+    saveAsCSV(predictions)
 
 if __name__ == "__main__":
     main()
-    #predictMelSpecs()
-    #outputTab([1, 3, 5, 15, 16, 12, 11, 16, 19, 21, 1, 12, 11, 16, 19, 21, 1, 3, 5, 15, 16, 12, 11, 16, 19, 21])
-    #main()
-    #predictMelSpecs()
 
     
     
