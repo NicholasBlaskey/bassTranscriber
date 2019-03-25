@@ -14,10 +14,11 @@ import numpy as np
 from keras import models
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import load_model
+from midiutil import MIDIFile
 
 
-SONG_TEMPO = 320
-SONG_NAME = "bombtrack"
+SONG_TEMPO = 240
+SONG_NAME = "turnASquare"
 PATH_TO_SONG = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songs/" + SONG_NAME + ".wav"
 PATH_TO_STORE_DATA = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songDataStorage/"
 TRAIN_DATA_PATH = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/dataPreprocessing/data/train"
@@ -110,23 +111,6 @@ def predictMelSpecs():
     song_generator.reset()
     prediction_array = model.predict_generator(song_generator, verbose=1, steps = len(dir_to_data + "/images/"))
 
-    predictions = []
-    for file_name in file_names:
-        # Remove file extension and the directory info and cast to int
-        file_names_indexes.append(int(file_name.split(".")[0].split("\\")[1]))
-
-    # Reverse the dictonary for class indexes 
-    class_indexes_to_notes = {v: k for k, v in train_generator.class_indices.items()}
-    predictions = [0] * len(file_names_indexes)
-    for file_index in file_names_indexes:
-        # First take the highest value of the prediction probalities and get its index
-        # Then convert that index to the note name through dictonary and finally convert to int
-        predictions[file_index] = int(class_indexes_to_notes[np.argmax(prediction_array[file_index])])
-        
-    return predictions
-
-CHARS_PER_LINE = 60
-def outputTab(predictions):
     # Make a dictonary to convert from class name to tab
     fname_to_note = {}
     for i in range(5):
@@ -140,16 +124,39 @@ def outputTab(predictions):
 
     # Add in silence
     fname_to_note[36] = "-"
-    
 
-#    line1 = "G|-"
-#    line2 = "D|-"
-#    line3 = "A|-"
-#    line4 = "E|-"
+    
+    predictions = []
+    for file_name in file_names:
+        # Remove file extension and the directory info and cast to int
+        file_names_indexes.append(int(file_name.split(".")[0].split("\\")[1]))
+
+    # Reverse the dictonary for class indexes 
+    class_indexes_to_notes = {v: k for k, v in train_generator.class_indices.items()}
+    predictions = [0] * len(file_names_indexes)
+    for file_index in file_names_indexes:
+        # First take the highest value of the prediction probalities and get its index
+        # Then convert that index to the note name through dictonary and finally convert to int
+        predictions[file_index] = fname_to_note[int(class_indexes_to_notes[np.argmax(prediction_array[file_index])])]
+        
+    return predictions
+
+CHARS_PER_LINE = 60
+def outputTab(predictions):
+    """
+    This file outputs a bass tab for the song given
+    based on the predictions of the model.
+
+    Parameters:
+    predictions: A list containing the models prediction for each note
+
+    Returns:
+    none
+    """
+
     line1 = line2 = line3 = line4 = ""
     output = ""
-    for i, prediction in enumerate(predictions):
-        note = fname_to_note[prediction]
+    for i, note in enumerate(predictions):
         # Handle running out of characters and starting a new line
         if i % int(CHARS_PER_LINE / 3) == 0:
             if i != 0:
@@ -196,6 +203,34 @@ def outputTab(predictions):
     # Add remaining notes to the output
     output = output + line1 + "\n" + line2 + "\n" + line3 + "\n" + line4 + "\n"
     print(output)
+
+def createMIDI(predictions):
+    song_MIDI = MIDIFile(1) # Make the midi file with one track
+
+    # Track 0, time 0, tempo is the song tempo
+    song_MIDI.addTempo(0, 0, SONG_TEMPO)
+
+    for i, prediction in enumerate(predictions):
+        # if the prediction is silence go to next note
+        if prediction[0] == "-":
+            continue
+        # Otherwise get the midi frequency for the open string
+        elif prediction[0] == "E":
+            midi_freq = 28
+        elif prediction[0] == "A":
+            midi_freq = 33
+        elif prediction[0] == "D":
+            midi_freq = 38
+        elif prediction[0] == "G":
+            midi_freq = 43
+
+        # track is 0, channel is 0, midi_freq + number of frets, time is just i
+        # time is assumed to be one quarter note for now, volume 100/127
+        song_MIDI.addNote(0, 0, midi_freq + int(prediction[1:]), i, 1, 100)
+
+    # Write the midi data to a file with the same name as our song    
+    with open(PATH_TO_STORE_DATA + SONG_NAME + "/" + SONG_NAME + ".mid", "wb") as output_file:
+        song_MIDI.writeFile(output_file)
     
 def main():
     os.mkdir(PATH_TO_STORE_DATA + SONG_NAME + "/")
@@ -203,13 +238,14 @@ def main():
     makeNotesIntoMelSpecs()
     predictions = predictMelSpecs()
     outputTab(predictions)
+    createMIDI(predictions)
 
 if __name__ == "__main__":
-    #main()
+    main()
     #predictMelSpecs()
     #outputTab([1, 3, 5, 15, 16, 12, 11, 16, 19, 21, 1, 12, 11, 16, 19, 21, 1, 3, 5, 15, 16, 12, 11, 16, 19, 21])
-    main()
-
+    #main()
+    #predictMelSpecs()
 
     
     
