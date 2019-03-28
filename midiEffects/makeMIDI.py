@@ -6,8 +6,9 @@ midi file with various effects.
 
 import csv
 from midiutil import MIDIFile
+import random
 
-SONG_NAME = "turnASquare"
+SONG_NAME = "terribleBeatboxing"
 PATH_TO_CSV = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songDataStorage/" + SONG_NAME + "/" + SONG_NAME + ".csv"
 PATH_TO_SAVE = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/midiEffects/midiFiles/"
 SONG_TEMPO = 240
@@ -101,7 +102,7 @@ class MIDIMaker:
         
         freq = self._get_MIDI_freq()
         if freq != -1:
-            octave_shift = octaves_up * 12
+            octave_shift = int(octaves_up * 12)
             
             # Add the root
             self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time, 1, 100)
@@ -127,7 +128,7 @@ class MIDIMaker:
         
         freq = self._get_MIDI_freq()
         if freq != -1:
-            octave_shift = octaves_up * 12
+            octave_shift = int(octaves_up * 12)
             
             # Add the root
             self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time, 1, 100)
@@ -153,7 +154,7 @@ class MIDIMaker:
         
         freq = self._get_MIDI_freq()
         if freq != -1:
-            octave_shift = octaves_up * 12
+            octave_shift = int(octaves_up * 12)
             
             # Add the root
             self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time, 1, 100)
@@ -177,7 +178,7 @@ class MIDIMaker:
 
         freq = self._get_MIDI_freq()
         if freq != -1:
-            octave_shift = octaves_up * 12
+            octave_shift = int(octaves_up * 12)
 
             self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time, .5, 100)
             
@@ -198,7 +199,7 @@ class MIDIMaker:
 
         freq = self._get_MIDI_freq()
         if freq != -1:
-            octave_shift = octaves_up * 12
+            octave_shift = int(octaves_up * 12)
 
             # Add root note
             self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time, .5, 100)
@@ -206,22 +207,87 @@ class MIDIMaker:
             # Add whatever next note is 
             self.MIDI_song.addNote(0, 0, freq + semi_tones_up + octave_shift, self.time + .5, .5, 100)
         self.time += 1
-    #def add_delay(self, octaves_up = 0):
-
     
-    #def add_syncopation(self, octaves_up = 0):
+    def add_synca(self, octaves_up = 0):
+        """
+        This method adds a kind of syncapation by doing a
+        rest of the beat then a eigth note of the note.
 
-    #def add_jittered(self, octaves_up = 0):
+        Parameters:
+        octaves_up: A number of octaves to shift the note up
+
+        Returns:
+        none
+        """
+
+        freq = self._get_MIDI_freq()
+        if freq != -1:
+            octave_shift = int(octaves_up * 12)
+
+            self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time + .5, .5, 100)
+            
+        self.time += 1
+
+    def add_delay(self, octaves_up = 0, vol = 80, delay_time = .1, times_delay_happens = 2):
+        """
+        This method adds a delay type effect replaying the last
+        note later a specified amount of times.
+
+        Parameters:
+        octaves_up: A number of octaves to shift the note up
+        vol: The volume of the second note
+        delay_time: The time after the notes in which delay starts
+        times_delay_happens: The amount of times the note will be repeated
+
+        Returns:
+        none
+        """
+
+        freq = self._get_MIDI_freq()
+        if freq != -1:
+            octave_shift = int(octaves_up * 12)
+
+            # Add original 
+            self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time, 1, 100)
+
+            # Add the delay times
+            for i in range(times_delay_happens):
+                self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time + delay_time * (1 + i), 1, vol)
+
+        self.time += 1
         
+    def add_jittered(self, octaves_up = 0):
+        """
+        This method adds a jittering effect to the notes
+        making them play at random intervals off the beat.
+
+        Parameters:
+        octaves_up: A number of octaves to shift the note up
+
+        Returns:
+        none
+        """
+
+        freq = self._get_MIDI_freq()
+        if freq != -1:
+            octave_shift = int(octaves_up * 12)
+            self.MIDI_song.addNote(0, 0, freq + octave_shift, self.time + random.random(), 1, 100)
+            
+        self.time += 1
     
     def save_MIDI(self):
         with open(PATH_TO_SAVE + self.name_to_save + ".mid", "wb") as output_file:
             self.MIDI_song.writeFile(output_file)        
         
 def main():
-    midi_song = MIDIMaker("rootFifthBelow")
-    while (len(midi_song.data) > 0):
-        midi_song.root_then_note(1, -7)
+    midi_song = MIDIMaker("terribleBeatBoxingComposition")
+    while (len(midi_song.data) > 5):
+        midi_song.root_then_note(2, 3)
+        midi_song.add_minor_triad(2) #random.random() * 6) #* random.choice([1, -1]))
+        midi_song.root_then_note(2, 7)
+        midi_song.root_then_note(2, 12)
+        midi_song.root_then_note(2, 7)
+
     midi_song.save_MIDI()
 
 if __name__ == "__main__":
