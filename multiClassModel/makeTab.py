@@ -17,8 +17,8 @@ from keras.models import load_model
 from midiutil import MIDIFile
 import csv
 
-SONG_TEMPO = 240
-SONG_NAME = "terribleBeatboxing"
+SONG_TEMPO = 480
+SONG_NAME = "actualBeatboxing"
 PATH_TO_SONG = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songs/" + SONG_NAME + ".wav"
 PATH_TO_STORE_DATA = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songDataStorage/"
 TRAIN_DATA_PATH = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/dataPreprocessing/data/train"

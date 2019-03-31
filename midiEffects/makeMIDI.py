@@ -8,10 +8,10 @@ import csv
 from midiutil import MIDIFile
 import random
 
-SONG_NAME = "terribleBeatboxing"
+SONG_NAME = "actualBeatboxing"
 PATH_TO_CSV = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songDataStorage/" + SONG_NAME + "/" + SONG_NAME + ".csv"
 PATH_TO_SAVE = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/midiEffects/midiFiles/"
-SONG_TEMPO = 240
+SONG_TEMPO = 480
 
 class MIDIMaker:
     """
@@ -280,14 +280,24 @@ class MIDIMaker:
             self.MIDI_song.writeFile(output_file)        
         
 def main():
-    midi_song = MIDIMaker("terribleBeatBoxingComposition")
-    while (len(midi_song.data) > 5):
+    midi_song = MIDIMaker("actualBeatboxing")
+    num_loops = 0
+    while (len(midi_song.data) > 1):
+        midi_song.add_major_triad(2)
+
+        """
         midi_song.root_then_note(2, 3)
-        midi_song.add_minor_triad(2) #random.random() * 6) #* random.choice([1, -1]))
-        midi_song.root_then_note(2, 7)
-        midi_song.root_then_note(2, 12)
+        if num_loops % 3 == 0:
+            midi_song.add_minor_triad(2)
+            midi_song.add_minor_triad(3)
+            midi_song.add_minor_triad(2)
+            #random.random() * 6) #* random.choice([1, -1]))
+        else:
+            midi_song.add_power_chord(2)
         midi_song.root_then_note(2, 7)
 
+        num_loops += 1
+        """
     midi_song.save_MIDI()
 
 if __name__ == "__main__":
