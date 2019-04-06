@@ -8,10 +8,10 @@ import csv
 from midiutil import MIDIFile
 import random
 
-SONG_NAME = "actualBeatboxing"
+SONG_NAME = "tapping"
 PATH_TO_CSV = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songDataStorage/" + SONG_NAME + "/" + SONG_NAME + ".csv"
 PATH_TO_SAVE = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/midiEffects/midiFiles/"
-SONG_TEMPO = 480
+SONG_TEMPO = 240
 
 class MIDIMaker:
     """
@@ -280,12 +280,12 @@ class MIDIMaker:
             self.MIDI_song.writeFile(output_file)        
         
 def main():
-    midi_song = MIDIMaker("actualBeatboxing")
+    midi_song = MIDIMaker("tappingComposition")
     num_loops = 0
-    while (len(midi_song.data) > 1):
-        midi_song.add_major_triad(2)
+    while (len(midi_song.data) > 5):
+        #midi_song.add_major_triad(2)
 
-        """
+        
         midi_song.root_then_note(2, 3)
         if num_loops % 3 == 0:
             midi_song.add_minor_triad(2)
@@ -297,7 +297,6 @@ def main():
         midi_song.root_then_note(2, 7)
 
         num_loops += 1
-        """
     midi_song.save_MIDI()
 
 if __name__ == "__main__":
