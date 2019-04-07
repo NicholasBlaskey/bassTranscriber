@@ -17,6 +17,7 @@ from keras.models import load_model
 from midiutil import MIDIFile
 import csv
 
+
 SONG_TEMPO = 480
 SONG_NAME = "tapping"
 PATH_TO_SONG = "C:/Users/nblas/Desktop/selfstudy/deepLearning/projects/BaKeTa/bassTranscriber/songsToPredict/songs/" + SONG_NAME + ".wav"

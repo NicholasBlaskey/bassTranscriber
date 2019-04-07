@@ -1,3 +1,10 @@
+"""
+This file will take audio from the default computer
+device. It will then convert that audio into melspectograms
+then will predict and play a midi note for what the model thinks
+it heard.
+"""
+
 import pyaudio
 import numpy as np
 import time
@@ -8,7 +15,9 @@ from keras import models
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import load_model
 from keras.preprocessing import image
-
+import pygame
+from pygame import midi
+import datetime
 
 THRESHOLD = 40 # dB
 RATE = 44100
@@ -115,7 +124,7 @@ def getMidiFreqFromMel(model, fileNum, class_indexes_to_fname):
     prediction = model.predict(img_tensor)
     return int(class_indexes_to_fname[np.argmax(prediction[0])]) + 28
 
-def playMidiFreq(midiFreq):
+def playMidiFreq(midiFreq, player):
     """
     This function will play the given midi frequency the model
     predicted.
@@ -128,19 +137,36 @@ def playMidiFreq(midiFreq):
     """
     print(midiFreq)
     if midiFreq != 64:
-        pass
+        player.note_on(midiFreq, 127)
+    
 
 def main():
+    """
+    This functions runs the program which will play the model
+    generated tab in real time.
+
+    Parameters:
+    none
+
+    Returns:
+    none
+    """
     stream, p = makeStream()
     stream.start_stream()
+
+    pygame.midi.init()
+    player = pygame.midi.Output(0)
+    player.set_instrument(35)
     
     model = load_model('multiModel.h5')
     class_to_fname = makeClassIndexToFname(model)
+    
     for i in range(100):
         makeMelFromStream(stream, i)
         midiFreq = getMidiFreqFromMel(model, i, class_to_fname)
-        playMidiFreq(midiFreq)
-
+        playMidiFreq(midiFreq, player)
+        print(datetime.datetime.now())
+        
     # Close up resources
     stream.stop_stream()
     stream.close()
