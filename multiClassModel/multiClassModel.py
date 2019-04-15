@@ -109,7 +109,7 @@ def plotHistory(history):
     plt.plot(epochs, val_acc, 'b', label='Validation acc')
     plt.title('Training and validation accuracy')
     plt.legend()
-    plt.savefig("trainValAcc.png")
+    plt.savefig("trainValAccSecond.png")
 
     # Make and save the plots for our loss 
     plt.figure()
@@ -118,7 +118,7 @@ def plotHistory(history):
     plt.title('Training and validation loss')
     plt.legend()
     plt.show()
-    plt.savefig("trainValLoss.png")
+    plt.savefig("trainValLossSecond.png")
 
 def main():
     """
@@ -138,11 +138,11 @@ def main():
     history = model.fit_generator(
       train_generator,
       steps_per_epoch=350,
-      epochs=15,
+      epochs=30,
       validation_data=validation_generator,
       validation_steps=70)
 
-    model.save('multiModel.h5')
+    model.save('2ndMelSpecModel30Epochs.h5')
     
     plotHistory(history)
 
@@ -157,7 +157,7 @@ def load_our_model():
     none
     """
     
-    model = load_model('multiModel.h5')
+    model = load_model('2ndMelSpecModel.h5')
     train_generator, validation_generator = make_generators()
     
     history = model.fit_generator(

@@ -158,7 +158,7 @@ def main():
     player = pygame.midi.Output(0)
     player.set_instrument(35)
     
-    model = load_model('multiModel.h5')
+    model = load_model('2ndMelSpecModel30Epochs.h5')
     class_to_fname = makeClassIndexToFname(model)
     
     for i in range(100):
